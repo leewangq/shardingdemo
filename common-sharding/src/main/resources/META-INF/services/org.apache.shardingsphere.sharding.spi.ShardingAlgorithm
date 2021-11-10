@@ -1,0 +1,3 @@
+com.sjdbc.demo.commonsharding.algorithm.CustomHintShardingAlgorithm
+com.sjdbc.demo.commonsharding.algorithm.CustomShardingDatabaseAlgorithm
+com.sjdbc.demo.commonsharding.algorithm.CustomShardingTableAlgorithm
