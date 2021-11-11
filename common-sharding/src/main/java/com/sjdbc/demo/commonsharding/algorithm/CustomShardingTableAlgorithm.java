@@ -17,10 +17,11 @@ public class CustomShardingTableAlgorithm implements StandardShardingAlgorithm<L
     @Override
     public String doSharding(Collection<String> availableTargetNames, PreciseShardingValue<Long> shardingValue) {
         for(String each:availableTargetNames){
-            if(each.endsWith(String.valueOf((shardingValue.getValue()-1)%6))){
+           /* if(each.endsWith(String.valueOf((shardingValue.getValue()-1)%6))){
                 return each;
-            }
-            /*if(shardingTableValue%2==0){
+            }*/
+            Long shardingTableValue=shardingValue.getValue();
+            if(shardingTableValue%2==0){
                 if(shardingTableValue%4==0){
                     if(each.endsWith("0")){
                         return each;
@@ -43,7 +44,7 @@ public class CustomShardingTableAlgorithm implements StandardShardingAlgorithm<L
                         return each;
                     }
                 }
-            }*/
+            }
         }
         throw new UnsupportedOperationException("");
     }

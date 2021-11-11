@@ -33,7 +33,7 @@ public class OrderController {
        /* try(HintManager hintManager=HintManager.getInstance()){
             hintManager.addDatabaseShardingValue("t_order",1L);
             hintManager.addTableShardingValue("t_order",1L);*/
-            for (long i = 25; i <= 48; i++) {
+            for (long i = 1; i <= 80; i++) {
                 Order order = new Order();
                 order.setUser_id(i);
                 order.setOrder_id(i+1);
@@ -58,11 +58,11 @@ public class OrderController {
 
     @GetMapping("/orderList")
     public String orderList(long userId) {
-        //List<Order> list = orderService.getOrderByUserId(userId);
-        List<Long> orderIdList=new LinkedList<>();
+        List<Order> list = orderService.getOrderByUserId(userId);
+       /* List<Long> orderIdList=new LinkedList<>();
         orderIdList.add(1L);
         orderIdList.add(3L);
-        List<Order> orderList=orderService.getOrderByUserIdRange(1L,3L);
+        List<Order> orderList=orderService.getOrderByUserIdRange(1L,3L);*/
         return "ok";
     }
 }

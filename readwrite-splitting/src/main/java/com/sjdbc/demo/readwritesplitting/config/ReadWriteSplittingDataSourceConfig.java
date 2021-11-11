@@ -29,9 +29,10 @@ public class ReadWriteSplittingDataSourceConfig {
     public DataSource createDataSource() throws SQLException {
 
         Map<String, DataSource> dataSourceMap = createDataSourceMap();
-        //ShardingRuleConfiguration shardingRuleConfig = createShardingRuleConfig();
-        ReadwriteSplittingRuleConfiguration readwriteSplittingRuleConfig = createReadwriteSplittingRuleConfig();
-        List<RuleConfiguration> configurations = Arrays.asList(readwriteSplittingRuleConfig);
+        ShardingRuleConfiguration shardingRuleConfig = createShardingRuleConfig();
+        ReadwriteSplittingRuleConfiguration readwriteSplittingRuleConfig1 = createReadwriteSplittingRuleConfig("ts_0");
+        ReadwriteSplittingRuleConfiguration readwriteSplittingRuleConfig2 = createReadwriteSplittingRuleConfig("ts_1");
+        List<RuleConfiguration> configurations = Arrays.asList(shardingRuleConfig,readwriteSplittingRuleConfig1,readwriteSplittingRuleConfig2);
         Properties properties = new Properties();
         properties.setProperty("sql-show", "true");//之前版本是sql.show
         DataSource dataSource = ShardingSphereDataSourceFactory.createDataSource(dataSourceMap, configurations, properties);
@@ -47,13 +48,13 @@ public class ReadWriteSplittingDataSourceConfig {
         //配置分片规则
         ShardingRuleConfiguration shardingRuleConfig = new ShardingRuleConfiguration();
 
-        ShardingTableRuleConfiguration orderTableRuleConfig = new ShardingTableRuleConfiguration("t_order", "t_order");
+        ShardingTableRuleConfiguration orderTableRuleConfig = new ShardingTableRuleConfiguration("t_order", "ts_${0..1}.t_order${0..1}");
 
         // 分库策略
-        //orderTableRuleConfig.setDatabaseShardingStrategy(new StandardShardingStrategyConfiguration("user_id", "dbShardingAlgorithm"));
+        orderTableRuleConfig.setDatabaseShardingStrategy(new StandardShardingStrategyConfiguration("user_id", "dbShardingAlgorithm"));
 
         // 分表策略
-        //orderTableRuleConfig.setTableShardingStrategy(new StandardShardingStrategyConfiguration("user_id", "tableShardingAlgorithm"));
+        orderTableRuleConfig.setTableShardingStrategy(new StandardShardingStrategyConfiguration("user_id", "tableShardingAlgorithm"));
 
         /*// hint强制路由分库策略
         orderTableRuleConfig.setDatabaseShardingStrategy(new HintShardingStrategyConfiguration("hint_test"));
@@ -62,19 +63,17 @@ public class ReadWriteSplittingDataSourceConfig {
         orderTableRuleConfig.setTableShardingStrategy(new HintShardingStrategyConfiguration("hint_test"));*/
 
         orderTableRuleConfig.setKeyGenerateStrategy(new KeyGenerateStrategyConfiguration("id", "snowflake"));
-
-
-        //shardingRuleConfig.getTables().add(orderTableRuleConfig);
+        shardingRuleConfig.getTables().add(orderTableRuleConfig);
 
         //数据库分片逻辑
-       /* Properties dbShardingAlgorithmProps = new Properties();
-        dbShardingAlgorithmProps.setProperty("algorithm-expression", "ds_${user_id % 2}");
-        shardingRuleConfig.getShardingAlgorithms().put("dbShardingAlgorithm", new ShardingSphereAlgorithmConfiguration("INLINE", dbShardingAlgorithmProps));
+        Properties dbShardingAlgorithmProps = new Properties();
+        //dbShardingAlgorithmProps.setProperty("algorithm-expression", "ds_${user_id % 2}");
+        shardingRuleConfig.getShardingAlgorithms().put("dbShardingAlgorithm", new ShardingSphereAlgorithmConfiguration("CUSTOM_SHARDING_DATABASE", dbShardingAlgorithmProps));
 
         //表分片逻辑
         Properties tableShardingAlgorithmProps = new Properties();
-        tableShardingAlgorithmProps.setProperty("algorithm-expression", "t_order${user_id % 2}");
-        shardingRuleConfig.getShardingAlgorithms().put("tableShardingAlgorithm", new ShardingSphereAlgorithmConfiguration("INLINE", tableShardingAlgorithmProps));*/
+        //tableShardingAlgorithmProps.setProperty("algorithm-expression", "t_order${user_id % 2}");
+        shardingRuleConfig.getShardingAlgorithms().put("tableShardingAlgorithm", new ShardingSphereAlgorithmConfiguration("CUSTOM_SHARDING_TABLE", tableShardingAlgorithmProps));
 
         //配置hint分片算法，根据Type匹配
         //shardingRuleConfig.getShardingAlgorithms().put("hint_test", new ShardingSphereAlgorithmConfiguration("HINT_TEST",  new Properties()));
@@ -93,24 +92,31 @@ public class ReadWriteSplittingDataSourceConfig {
         //数据源配置
         DruidDataSource dataSource1 = new DruidDataSource();
         dataSource1.setDriverClassName("com.mysql.cj.jdbc.Driver");
-        dataSource1.setUrl("jdbc:mysql://localhost:3306/write_0?characterEncoding=utf-8&serverTimezone=Asia/Shanghai");
+        dataSource1.setUrl("jdbc:mysql://localhost:3306/ts_0?characterEncoding=utf-8&serverTimezone=Asia/Shanghai");
         dataSource1.setUsername("root");
         dataSource1.setPassword("123456");
-        dataSourceMap.put("write_0", dataSource1);
+        dataSourceMap.put("write_ts_0", dataSource1);
 
         DruidDataSource dataSource2 = new DruidDataSource();
         dataSource2.setDriverClassName("com.mysql.cj.jdbc.Driver");
-        dataSource2.setUrl("jdbc:mysql://localhost:3306/read_0?characterEncoding=utf-8&serverTimezone=Asia/Shanghai");
+        dataSource2.setUrl("jdbc:mysql://localhost:3306/ts_1?characterEncoding=utf-8&serverTimezone=Asia/Shanghai");
         dataSource2.setUsername("root");
         dataSource2.setPassword("123456");
-        dataSourceMap.put("read_0", dataSource2);
+        dataSourceMap.put("write_ts_1", dataSource2);
 
         DruidDataSource dataSource3 = new DruidDataSource();
         dataSource3.setDriverClassName("com.mysql.cj.jdbc.Driver");
-        dataSource3.setUrl("jdbc:mysql://localhost:3306/read_1?characterEncoding=utf-8&serverTimezone=Asia/Shanghai");
+        dataSource3.setUrl("jdbc:mysql://localhost:3307/ts_0?characterEncoding=utf-8&serverTimezone=Asia/Shanghai");
         dataSource3.setUsername("root");
         dataSource3.setPassword("123456");
-        dataSourceMap.put("read_1", dataSource3);
+        dataSourceMap.put("read_ts_0", dataSource3);
+
+        DruidDataSource dataSource4 = new DruidDataSource();
+        dataSource4.setDriverClassName("com.mysql.cj.jdbc.Driver");
+        dataSource4.setUrl("jdbc:mysql://localhost:3307/ts_1?characterEncoding=utf-8&serverTimezone=Asia/Shanghai");
+        dataSource4.setUsername("root");
+        dataSource4.setPassword("123456");
+        dataSourceMap.put("read_ts_1", dataSource4);
 
         return dataSourceMap;
     }
@@ -121,10 +127,11 @@ public class ReadWriteSplittingDataSourceConfig {
         return result;
     }
 
-    //读写分离目前只支持一主多从
-    private static ReadwriteSplittingRuleConfiguration createReadwriteSplittingRuleConfig() {
+    private static ReadwriteSplittingRuleConfiguration createReadwriteSplittingRuleConfig(String dbname) {
+        String writeDataSourceName=String.format("write_%s",dbname);
+        List<String> readSourceNames=Arrays.asList(String.format("read_%s",dbname));
         ReadwriteSplittingDataSourceRuleConfiguration readwriteSplittingDataSourceRuleConfig =
-                new ReadwriteSplittingDataSourceRuleConfiguration("readwritedb", "","write_0",Arrays.asList("read_0","read_1"),"random");
+                new ReadwriteSplittingDataSourceRuleConfiguration(dbname, "",writeDataSourceName,readSourceNames,"random");
         Map<String, ShardingSphereAlgorithmConfiguration> loadBalancers= ImmutableMap.of("random", new ShardingSphereAlgorithmConfiguration("RANDOM", new Properties()));
         ReadwriteSplittingRuleConfiguration readwriteSplittingRuleConfig = new ReadwriteSplittingRuleConfiguration(Collections.singletonList(readwriteSplittingDataSourceRuleConfig), loadBalancers);
         return readwriteSplittingRuleConfig;

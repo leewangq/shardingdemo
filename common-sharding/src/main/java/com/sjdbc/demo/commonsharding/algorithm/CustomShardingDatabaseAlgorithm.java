@@ -23,10 +23,10 @@ public class CustomShardingDatabaseAlgorithm implements StandardShardingAlgorith
     @Override
     public String doSharding(Collection<String> availableTargetNames, PreciseShardingValue<Long> shardingValue) {
         for(String each:availableTargetNames){
-           /* if(each.endsWith(String.valueOf(shardingValue.getValue() % 2))){
+            if(each.endsWith(String.valueOf(shardingValue.getValue() % 2))){
                 return each;
-            }*/
-            if((shardingValue.getValue()-1)%6==0||(shardingValue.getValue()-1)%6==1){
+            }
+            /*if((shardingValue.getValue()-1)%6==0||(shardingValue.getValue()-1)%6==1){
                 if(each.endsWith("0")){
                     return each;
                 }
@@ -35,7 +35,7 @@ public class CustomShardingDatabaseAlgorithm implements StandardShardingAlgorith
                 if(each.endsWith("1")){
                     return each;
                 }
-            }
+            }*/
         }
         throw new UnsupportedOperationException("");
     }
