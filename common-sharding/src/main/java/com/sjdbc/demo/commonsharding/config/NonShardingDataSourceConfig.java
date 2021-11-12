@@ -28,17 +28,17 @@ public class NonShardingDataSourceConfig {
     @Bean
     @Primary
     public DataSource memberDataSource() throws SQLException {
-        DruidDataSource dataSource7 = new DruidDataSource();
-        dataSource7.setDriverClassName("com.mysql.cj.jdbc.Driver");
-        dataSource7.setUrl("jdbc:mysql://localhost:3306/member?characterEncoding=utf-8&serverTimezone=Asia/Shanghai");
-        dataSource7.setUsername("root");
-        dataSource7.setPassword("123456");
-        dataSource7.setFilters("stat,wall");
-        dataSource7.setInitialSize(5);
-        dataSource7.setMinIdle(10);
-        dataSource7.setMaxActive(20);
-        dataSource7.setMaxWait(5000);
-        return dataSource7;
+        DruidDataSource member = new DruidDataSource();
+        member.setDriverClassName("com.mysql.cj.jdbc.Driver");
+        member.setUrl("jdbc:mysql://localhost:3306/member?characterEncoding=utf-8&serverTimezone=Asia/Shanghai");
+        member.setUsername("root");
+        member.setPassword("123456");
+        member.setFilters("stat,wall");
+        member.setInitialSize(5);
+        member.setMinIdle(10);
+        member.setMaxActive(20);
+        member.setMaxWait(5000);
+        return member;
     }
 
     @Bean(name="nonShardingSqlSessionFactory")

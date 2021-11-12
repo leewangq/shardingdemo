@@ -3,6 +3,8 @@ package com.sjdbc.demo.commonsharding.config;
 
 import com.alibaba.druid.pool.DruidDataSource;
 import com.google.common.collect.ImmutableMap;
+import org.apache.ibatis.session.SqlSessionFactory;
+import org.apache.ibatis.session.SqlSessionManager;
 import org.apache.shardingsphere.driver.api.ShardingSphereDataSourceFactory;
 import org.apache.shardingsphere.infra.config.RuleConfiguration;
 import org.apache.shardingsphere.infra.config.algorithm.ShardingSphereAlgorithmConfiguration;
@@ -13,7 +15,12 @@ import org.apache.shardingsphere.sharding.api.config.rule.ShardingTableRuleConfi
 import org.apache.shardingsphere.sharding.api.config.strategy.keygen.KeyGenerateStrategyConfiguration;
 import org.apache.shardingsphere.sharding.api.config.strategy.sharding.NoneShardingStrategyConfiguration;
 import org.apache.shardingsphere.sharding.api.config.strategy.sharding.StandardShardingStrategyConfiguration;
+import org.mybatis.spring.SqlSessionFactoryBean;
+import org.mybatis.spring.annotation.MapperScan;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 import org.springframework.stereotype.Component;
 
 import javax.sql.DataSource;
@@ -26,9 +33,12 @@ import java.util.*;
  * @description: java api方式配置数据源
  * @date 2021/9/7 18:03
  */
-@Component
+@Configuration
+@MapperScan(value = "com.sjdbc.demo.commonsharding.mapper.order",sqlSessionFactoryRef = "shardingSqlSessionFactory")
 public class ShardingDataSourceConfig {
-    @Bean
+    private String mapper = "classpath:mapper/order/*.xml";
+
+    @Bean(name="orderDataSource")
     public DataSource createDataSource() throws SQLException {
         Map<String, DataSource> dataSourceMap = createDataSourceMap();
         ShardingRuleConfiguration orderShardingRuleConfig = createOrderShardingRuleConfig();
@@ -42,6 +52,21 @@ public class ShardingDataSourceConfig {
         properties.setProperty("sql-show", "true");//之前版本是sql.show
         DataSource dataSource = ShardingSphereDataSourceFactory.createDataSource(dataSourceMap, configurations, properties);
         return dataSource;
+    }
+
+    @Bean(name="shardingSqlSessionFactory")
+    public SqlSessionManager createSqlSessionManager(@Qualifier("orderDataSource") DataSource dataSource) {
+        try {
+            SqlSessionFactoryBean sqlSessionFactoryBean = new SqlSessionFactoryBean();
+            sqlSessionFactoryBean.setDataSource(dataSource);
+            sqlSessionFactoryBean.setMapperLocations(new PathMatchingResourcePatternResolver().getResources(mapper));
+            SqlSessionFactory sqlSessionFactory = sqlSessionFactoryBean.getObject();
+            SqlSessionManager sqlSessionManager = SqlSessionManager.newInstance(sqlSessionFactory);
+            return sqlSessionManager;
+        } catch (Exception ex) {
+            System.out.println(ex);
+            return null;
+        }
     }
 
     /**

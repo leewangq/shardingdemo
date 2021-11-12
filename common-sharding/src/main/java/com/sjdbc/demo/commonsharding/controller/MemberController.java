@@ -1,5 +1,6 @@
 package com.sjdbc.demo.commonsharding.controller;
 
+import com.baomidou.dynamic.datasource.annotation.DS;
 import com.sjdbc.demo.commonsharding.po.Member;
 import com.sjdbc.demo.commonsharding.serivce.MemberService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,6 +23,7 @@ public class MemberController {
     private MemberService memberService;
 
     @GetMapping("/add")
+    @DS("member")
     public String add(){
         Member member=new Member();
         member.setName("jacky");

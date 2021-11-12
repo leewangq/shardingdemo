@@ -18,8 +18,6 @@ public class ControllerAspect {
     @Autowired
     private SqlSessionManager sqlSessionManager;
 
-    @Autowired
-    private PersonManager personManager;
 
     @Pointcut("execution(* com.sjdbc.demo.demo.controller.*.*(..)) ")
     public void pointcutController() {
@@ -39,9 +37,9 @@ public class ControllerAspect {
         if (sqlSessionManager != null && sqlSessionManager.isManagedSessionStarted()) {
             sqlSessionManager.close();
         }
-        if(personManager!=null&&personManager.isPersonManagerStarted()){
+       /* if(personManager!=null&&personManager.isPersonManagerStarted()){
             personManager.close();
             System.out.println("close");
-        }
+        }*/
     }
 }

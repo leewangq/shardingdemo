@@ -21,9 +21,6 @@ public class OrderServiceImpl implements OrderService {
     @Autowired
     private OrderMapper orderMapper;
 
-    @Autowired
-    private SqlSessionManager sqlSessionManager;
-
     @Override
     public Long addOrder(Order order) {
         return orderMapper.addOrder(order);
