@@ -6,6 +6,7 @@ import com.google.common.collect.ImmutableMap;
 import org.apache.shardingsphere.driver.api.ShardingSphereDataSourceFactory;
 import org.apache.shardingsphere.infra.config.RuleConfiguration;
 import org.apache.shardingsphere.infra.config.algorithm.ShardingSphereAlgorithmConfiguration;
+import org.apache.shardingsphere.readwritesplitting.algorithm.RoundRobinReplicaLoadBalanceAlgorithm;
 import org.apache.shardingsphere.readwritesplitting.api.ReadwriteSplittingRuleConfiguration;
 import org.apache.shardingsphere.readwritesplitting.api.rule.ReadwriteSplittingDataSourceRuleConfiguration;
 import org.apache.shardingsphere.sharding.api.config.ShardingRuleConfiguration;
@@ -32,8 +33,11 @@ public class DataSourceConfig {
 
         Map<String, DataSource> dataSourceMap = createDataSourceMap();
         ShardingRuleConfiguration shardingRuleConfig = createShardingRuleConfig();
-        ReadwriteSplittingRuleConfiguration readwriteSplittingRuleConfig1 = createReadwriteSplittingRuleConfig("ts_0");
-        ReadwriteSplittingRuleConfiguration readwriteSplittingRuleConfig2 = createReadwriteSplittingRuleConfig("ts_1");
+        List<Integer> readPortList=new ArrayList<>();
+        readPortList.add(3307);
+        readPortList.add(3308);
+        ReadwriteSplittingRuleConfiguration readwriteSplittingRuleConfig1 = createReadwriteSplittingRuleConfig(3306,readPortList,"ts_0");
+        ReadwriteSplittingRuleConfiguration readwriteSplittingRuleConfig2 = createReadwriteSplittingRuleConfig(3306,readPortList,"ts_1");
         List<RuleConfiguration> configurations = Arrays.asList(shardingRuleConfig,readwriteSplittingRuleConfig1,readwriteSplittingRuleConfig2);
         Properties properties = new Properties();
         properties.setProperty("sql-show", "true");//之前版本是sql.show
@@ -97,22 +101,21 @@ public class DataSourceConfig {
         dataSource1.setUrl("jdbc:mysql://localhost:3306/ts_0?characterEncoding=utf-8&serverTimezone=Asia/Shanghai");
         dataSource1.setUsername("root");
         dataSource1.setPassword("123456");
-        dataSourceMap.put("write_ts_0", dataSource1);
-        dataSource1.setFilters("stat,wall,log4j");
+        dataSourceMap.put("write_3306_ts_0", dataSource1);
+        dataSource1.setFilters("stat,wall");
         dataSource1.setInitialSize(5);
         dataSource1.setMinIdle(10);
         dataSource1.setMaxActive(20);
         dataSource1.setMaxWait(5000);
-
 
         DruidDataSource dataSource2 = new DruidDataSource();
         dataSource2.setDriverClassName("com.mysql.cj.jdbc.Driver");
         dataSource2.setUrl("jdbc:mysql://localhost:3306/ts_1?characterEncoding=utf-8&serverTimezone=Asia/Shanghai");
         dataSource2.setUsername("root");
         dataSource2.setPassword("123456");
-        dataSourceMap.put("write_ts_1", dataSource2);
+        dataSourceMap.put("write_3306_ts_1", dataSource2);
 
-        dataSource2.setFilters("stat,wall,log4j");
+        dataSource2.setFilters("stat,wall");
         dataSource2.setInitialSize(5);
         dataSource2.setMinIdle(10);
         dataSource2.setMaxActive(20);
@@ -123,9 +126,9 @@ public class DataSourceConfig {
         dataSource3.setUrl("jdbc:mysql://localhost:3307/ts_0?characterEncoding=utf-8&serverTimezone=Asia/Shanghai");
         dataSource3.setUsername("root");
         dataSource3.setPassword("123456");
-        dataSourceMap.put("read_ts_0", dataSource3);
+        dataSourceMap.put("read_3307_ts_0", dataSource3);
 
-       dataSource3.setFilters("stat,wall,log4j");
+       dataSource3.setFilters("stat,wall");
        dataSource3.setInitialSize(5);
        dataSource3.setMinIdle(10);
        dataSource3.setMaxActive(20);
@@ -136,13 +139,39 @@ public class DataSourceConfig {
         dataSource4.setUrl("jdbc:mysql://localhost:3307/ts_1?characterEncoding=utf-8&serverTimezone=Asia/Shanghai");
         dataSource4.setUsername("root");
         dataSource4.setPassword("123456");
-        dataSourceMap.put("read_ts_1", dataSource4);
+        dataSourceMap.put("read_3307_ts_1", dataSource4);
 
-        dataSource4.setFilters("stat,wall,log4j");
+        dataSource4.setFilters("stat,wall");
         dataSource4.setInitialSize(5);
         dataSource4.setMinIdle(10);
         dataSource4.setMaxActive(20);
         dataSource4.setMaxWait(5000);
+
+        DruidDataSource dataSource5 = new DruidDataSource();
+        dataSource5.setDriverClassName("com.mysql.cj.jdbc.Driver");
+        dataSource5.setUrl("jdbc:mysql://localhost:3308/ts_0?characterEncoding=utf-8&serverTimezone=Asia/Shanghai");
+        dataSource5.setUsername("root");
+        dataSource5.setPassword("123456");
+        dataSourceMap.put("read_3308_ts_0", dataSource5);
+
+        dataSource5.setFilters("stat,wall");
+        dataSource5.setInitialSize(5);
+        dataSource5.setMinIdle(10);
+        dataSource5.setMaxActive(20);
+        dataSource5.setMaxWait(5000);
+
+        DruidDataSource dataSource6 = new DruidDataSource();
+        dataSource6.setDriverClassName("com.mysql.cj.jdbc.Driver");
+        dataSource6.setUrl("jdbc:mysql://localhost:3308/ts_1?characterEncoding=utf-8&serverTimezone=Asia/Shanghai");
+        dataSource6.setUsername("root");
+        dataSource6.setPassword("123456");
+        dataSourceMap.put("read_3308_ts_1", dataSource6);
+
+        dataSource6.setFilters("stat,wall");
+        dataSource6.setInitialSize(5);
+        dataSource6.setMinIdle(10);
+        dataSource6.setMaxActive(20);
+        dataSource6.setMaxWait(5000);
 
         return dataSourceMap;
     }
@@ -153,12 +182,15 @@ public class DataSourceConfig {
         return result;
     }
 
-    private static ReadwriteSplittingRuleConfiguration createReadwriteSplittingRuleConfig(String dbname) {
-        String writeDataSourceName=String.format("write_%s",dbname);
-        List<String> readSourceNames=Arrays.asList(String.format("read_%s",dbname));
+    private static ReadwriteSplittingRuleConfiguration createReadwriteSplittingRuleConfig(int writeDbPort,List<Integer> readDbPortList,String dbname) {
+        String writeDataSourceName=String.format("write_%s_%s",writeDbPort,dbname);
+        List<String> readSourceNames=new ArrayList<>(readDbPortList.size());
+        for(Integer port:readDbPortList){
+            readSourceNames.add(String.format("read_%s_%s",port,dbname));//对应datasourceMap里面的key
+        }
         ReadwriteSplittingDataSourceRuleConfiguration readwriteSplittingDataSourceRuleConfig =
                 new ReadwriteSplittingDataSourceRuleConfiguration(dbname, "",writeDataSourceName,readSourceNames,"random");
-        Map<String, ShardingSphereAlgorithmConfiguration> loadBalancers= ImmutableMap.of("random", new ShardingSphereAlgorithmConfiguration("RANDOM", new Properties()));
+        Map<String, ShardingSphereAlgorithmConfiguration> loadBalancers= ImmutableMap.of("random", new ShardingSphereAlgorithmConfiguration("ROUND_ROBIN", new Properties()));
         ReadwriteSplittingRuleConfiguration readwriteSplittingRuleConfig = new ReadwriteSplittingRuleConfiguration(Collections.singletonList(readwriteSplittingDataSourceRuleConfig), loadBalancers);
         return readwriteSplittingRuleConfig;
     }
