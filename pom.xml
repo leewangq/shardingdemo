@@ -10,7 +10,6 @@
     <description>sharding jdbc5 demo</description>
 
     <modules>
-        <module>readwrite-splitting</module>
         <module>common-sharding</module>
     </modules>
     <parent>
@@ -76,11 +75,6 @@
             <dependency>
                 <groupId>com.sjdbc.demo</groupId>
                 <artifactId>common-sharding</artifactId>
-                <version>0.0.1-SNAPSHOT</version>
-            </dependency>
-            <dependency>
-                <groupId>com.sjdbc.demo</groupId>
-                <artifactId>readwrite-splitting</artifactId>
                 <version>0.0.1-SNAPSHOT</version>
             </dependency>
             <dependency>
