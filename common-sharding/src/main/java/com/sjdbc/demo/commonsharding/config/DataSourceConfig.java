@@ -188,9 +188,10 @@ public class DataSourceConfig {
         for(Integer port:readDbPortList){
             readSourceNames.add(String.format("read_%s_%s",port,dbname));//对应datasourceMap里面的key
         }
+        //配置轮训负载均衡
         ReadwriteSplittingDataSourceRuleConfiguration readwriteSplittingDataSourceRuleConfig =
-                new ReadwriteSplittingDataSourceRuleConfiguration(dbname, "",writeDataSourceName,readSourceNames,"random");
-        Map<String, ShardingSphereAlgorithmConfiguration> loadBalancers= ImmutableMap.of("random", new ShardingSphereAlgorithmConfiguration("ROUND_ROBIN", new Properties()));
+                new ReadwriteSplittingDataSourceRuleConfiguration(dbname, "",writeDataSourceName,readSourceNames,"robin");
+        Map<String, ShardingSphereAlgorithmConfiguration> loadBalancers= ImmutableMap.of("robin", new ShardingSphereAlgorithmConfiguration("ROUND_ROBIN", new Properties()));
         ReadwriteSplittingRuleConfiguration readwriteSplittingRuleConfig = new ReadwriteSplittingRuleConfiguration(Collections.singletonList(readwriteSplittingDataSourceRuleConfig), loadBalancers);
         return readwriteSplittingRuleConfig;
     }
