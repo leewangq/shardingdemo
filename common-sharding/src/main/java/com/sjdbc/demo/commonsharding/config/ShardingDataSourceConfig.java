@@ -6,12 +6,12 @@ import com.google.common.collect.ImmutableMap;
 import org.apache.shardingsphere.driver.api.ShardingSphereDataSourceFactory;
 import org.apache.shardingsphere.infra.config.RuleConfiguration;
 import org.apache.shardingsphere.infra.config.algorithm.ShardingSphereAlgorithmConfiguration;
-import org.apache.shardingsphere.readwritesplitting.algorithm.RoundRobinReplicaLoadBalanceAlgorithm;
 import org.apache.shardingsphere.readwritesplitting.api.ReadwriteSplittingRuleConfiguration;
 import org.apache.shardingsphere.readwritesplitting.api.rule.ReadwriteSplittingDataSourceRuleConfiguration;
 import org.apache.shardingsphere.sharding.api.config.ShardingRuleConfiguration;
 import org.apache.shardingsphere.sharding.api.config.rule.ShardingTableRuleConfiguration;
 import org.apache.shardingsphere.sharding.api.config.strategy.keygen.KeyGenerateStrategyConfiguration;
+import org.apache.shardingsphere.sharding.api.config.strategy.sharding.NoneShardingStrategyConfiguration;
 import org.apache.shardingsphere.sharding.api.config.strategy.sharding.StandardShardingStrategyConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Component;
@@ -27,18 +27,17 @@ import java.util.*;
  * @date 2021/9/7 18:03
  */
 @Component
-public class DataSourceConfig {
+public class ShardingDataSourceConfig {
     @Bean
     public DataSource createDataSource() throws SQLException {
-
         Map<String, DataSource> dataSourceMap = createDataSourceMap();
-        ShardingRuleConfiguration shardingRuleConfig = createShardingRuleConfig();
-        List<Integer> readPortList=new ArrayList<>();
+        ShardingRuleConfiguration orderShardingRuleConfig = createOrderShardingRuleConfig();
+        List<Integer> readPortList = new ArrayList<>();
         readPortList.add(3307);
         readPortList.add(3308);
-        ReadwriteSplittingRuleConfiguration readwriteSplittingRuleConfig1 = createReadwriteSplittingRuleConfig(3306,readPortList,"ts_0");
-        ReadwriteSplittingRuleConfiguration readwriteSplittingRuleConfig2 = createReadwriteSplittingRuleConfig(3306,readPortList,"ts_1");
-        List<RuleConfiguration> configurations = Arrays.asList(shardingRuleConfig,readwriteSplittingRuleConfig1,readwriteSplittingRuleConfig2);
+        ReadwriteSplittingRuleConfiguration readwriteSplittingRuleConfig1 = createReadwriteSplittingRuleConfig(3306, readPortList, "ts_0");
+        ReadwriteSplittingRuleConfiguration readwriteSplittingRuleConfig2 = createReadwriteSplittingRuleConfig(3306, readPortList, "ts_1");
+        List<RuleConfiguration> configurations = Arrays.asList(orderShardingRuleConfig, readwriteSplittingRuleConfig1, readwriteSplittingRuleConfig2);
         Properties properties = new Properties();
         properties.setProperty("sql-show", "true");//之前版本是sql.show
         DataSource dataSource = ShardingSphereDataSourceFactory.createDataSource(dataSourceMap, configurations, properties);
@@ -46,11 +45,11 @@ public class DataSourceConfig {
     }
 
     /**
-     * 分片规则配置
+     * Order库与表的分片规则配置
      *
      * @return
      */
-    private static ShardingRuleConfiguration createShardingRuleConfig() {
+    private static ShardingRuleConfiguration createOrderShardingRuleConfig() {
         //配置分片规则
         ShardingRuleConfiguration shardingRuleConfig = new ShardingRuleConfiguration();
 
@@ -128,11 +127,11 @@ public class DataSourceConfig {
         dataSource3.setPassword("123456");
         dataSourceMap.put("read_3307_ts_0", dataSource3);
 
-       dataSource3.setFilters("stat,wall");
-       dataSource3.setInitialSize(5);
-       dataSource3.setMinIdle(10);
-       dataSource3.setMaxActive(20);
-       dataSource3.setMaxWait(5000);
+        dataSource3.setFilters("stat,wall");
+        dataSource3.setInitialSize(5);
+        dataSource3.setMinIdle(10);
+        dataSource3.setMaxActive(20);
+        dataSource3.setMaxWait(5000);
 
         DruidDataSource dataSource4 = new DruidDataSource();
         dataSource4.setDriverClassName("com.mysql.cj.jdbc.Driver");
@@ -182,16 +181,16 @@ public class DataSourceConfig {
         return result;
     }
 
-    private static ReadwriteSplittingRuleConfiguration createReadwriteSplittingRuleConfig(int writeDbPort,List<Integer> readDbPortList,String dbname) {
-        String writeDataSourceName=String.format("write_%s_%s",writeDbPort,dbname);
-        List<String> readSourceNames=new ArrayList<>(readDbPortList.size());
-        for(Integer port:readDbPortList){
-            readSourceNames.add(String.format("read_%s_%s",port,dbname));//对应datasourceMap里面的key
+    private static ReadwriteSplittingRuleConfiguration createReadwriteSplittingRuleConfig(int writeDbPort, List<Integer> readDbPortList, String dbname) {
+        String writeDataSourceName = String.format("write_%s_%s", writeDbPort, dbname);
+        List<String> readSourceNames = new ArrayList<>(readDbPortList.size());
+        for (Integer port : readDbPortList) {
+            readSourceNames.add(String.format("read_%s_%s", port, dbname));//对应datasourceMap里面的key
         }
         //配置轮训负载均衡
         ReadwriteSplittingDataSourceRuleConfiguration readwriteSplittingDataSourceRuleConfig =
-                new ReadwriteSplittingDataSourceRuleConfiguration(dbname, "",writeDataSourceName,readSourceNames,"robin");
-        Map<String, ShardingSphereAlgorithmConfiguration> loadBalancers= ImmutableMap.of("robin", new ShardingSphereAlgorithmConfiguration("ROUND_ROBIN", new Properties()));
+                new ReadwriteSplittingDataSourceRuleConfiguration(dbname, "", writeDataSourceName, readSourceNames, "robin");
+        Map<String, ShardingSphereAlgorithmConfiguration> loadBalancers = ImmutableMap.of("robin", new ShardingSphereAlgorithmConfiguration("ROUND_ROBIN", new Properties()));
         ReadwriteSplittingRuleConfiguration readwriteSplittingRuleConfig = new ReadwriteSplittingRuleConfiguration(Collections.singletonList(readwriteSplittingDataSourceRuleConfig), loadBalancers);
         return readwriteSplittingRuleConfig;
     }

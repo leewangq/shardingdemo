@@ -22,15 +22,15 @@ import javax.sql.DataSource;
  * @date 2021/9/9 11:26
  */
 @Configuration
-@MapperScan("com.sjdbc.demo.commonsharding.mapper")
+@MapperScan(value = "com.sjdbc.demo.commonsharding.mapper.order",sqlSessionFactoryRef = "shardingSqlSessionFactory")
 public class MyBatisConfig {
 
     @Autowired
     private DataSource dataSource;
 
-    private String mapper = "classpath:mapper/*.xml";
+    private String mapper = "classpath:mapper/order/*.xml";
 
-    @Bean
+    @Bean(name="shardingSqlSessionFactory")
     public SqlSessionManager createSqlSessionManager() {
         try {
             SqlSessionFactoryBean sqlSessionFactoryBean = new SqlSessionFactoryBean();

@@ -1,6 +1,6 @@
 package com.sjdbc.demo.commonsharding.serivce.impl;
 
-import com.sjdbc.demo.commonsharding.mapper.OrderMapper;
+import com.sjdbc.demo.commonsharding.mapper.order.OrderMapper;
 import com.sjdbc.demo.commonsharding.po.Order;
 import com.sjdbc.demo.commonsharding.serivce.OrderService;
 import org.apache.ibatis.session.SqlSessionManager;

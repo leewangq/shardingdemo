@@ -1,4 +1,4 @@
-package com.sjdbc.demo.commonsharding.mapper;
+package com.sjdbc.demo.commonsharding.mapper.order;
 
 import com.sjdbc.demo.commonsharding.po.Order;
 import org.apache.ibatis.annotations.Param;
