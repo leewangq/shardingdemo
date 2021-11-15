@@ -19,7 +19,7 @@ public class ControllerAspect {
     private SqlSessionManager sqlSessionManager;
 
 
-    @Pointcut("execution(* com.sjdbc.demo.demo.controller.*.*(..)) ")
+    @Pointcut("execution(* com.sjdbc.demo.commonsharding.controller.*.*(..)) ")
     public void pointcutController() {
 
     }

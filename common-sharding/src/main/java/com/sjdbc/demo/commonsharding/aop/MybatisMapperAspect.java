@@ -3,10 +3,7 @@ package com.sjdbc.demo.commonsharding.aop;
 
 import org.apache.ibatis.session.SqlSessionManager;
 import org.aspectj.lang.ProceedingJoinPoint;
-import org.aspectj.lang.annotation.Around;
-import org.aspectj.lang.annotation.Aspect;
-import org.aspectj.lang.annotation.Before;
-import org.aspectj.lang.annotation.Pointcut;
+import org.aspectj.lang.annotation.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -19,19 +16,24 @@ import java.sql.DatabaseMetaData;
  * @date 2021/9/12 21:23
  */
 @Component
-//@Aspect
+@Aspect
 public class MybatisMapperAspect {
 
     @Autowired
     private SqlSessionManager sqlSessionManager;
 
-    @Pointcut("execution(* com.sjdbc.demo.demo.mapper.*.*(..)) ")
+    @Pointcut("execution(* com.sjdbc.demo.commonsharding.mapper.*.*.*(..)) ")
     public void pointcutMapper() {
     }
 
     @Before("pointcutMapper()")
     public void before() {
+        System.out.println("before pointcutMapper");
+    }
 
+    @After("pointcutMapper()")
+    public void after() {
+        System.out.println("after pointcutMapper");
     }
 
 }
