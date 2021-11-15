@@ -2,6 +2,8 @@ package com.sjdbc.demo.commonsharding.serivce;
 
 import com.sjdbc.demo.commonsharding.po.Member;
 
+import java.util.List;
+
 /**
  * @Descirption
  * @Author lx
@@ -9,4 +11,5 @@ import com.sjdbc.demo.commonsharding.po.Member;
  */
 public interface MemberService {
     void add(Member member);
+    List<Member> list();
 }

@@ -18,4 +18,7 @@
                    #{createTime,jdbcType=TIMESTAMP}
                )
     </insert>
+    <select id="list" resultMap="baseResultMap">
+        SELECT * from member
+    </select>
 </mapper>

@@ -30,7 +30,7 @@ import java.util.*;
 /**
  * @author xiang2.liu
  * @version 1.0
- * @description: java api方式配置数据源
+ * @description: 分片数据源配置
  * @date 2021/9/7 18:03
  */
 @Configuration

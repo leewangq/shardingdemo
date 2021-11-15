@@ -15,7 +15,7 @@ import javax.sql.DataSource;
 import java.sql.SQLException;
 
 /**
- * @Descirption
+ * @Descirption 不分片数据源配置
  * @Author lx
  * @Date 2021/11/12
  */

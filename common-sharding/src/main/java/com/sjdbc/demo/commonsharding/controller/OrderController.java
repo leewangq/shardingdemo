@@ -2,6 +2,7 @@ package com.sjdbc.demo.commonsharding.controller;
 
 import com.sjdbc.demo.commonsharding.po.Order;
 import com.sjdbc.demo.commonsharding.serivce.OrderService;
+import org.apache.ibatis.session.SqlSessionManager;
 import org.apache.shardingsphere.transaction.annotation.ShardingTransactionType;
 import org.apache.shardingsphere.transaction.core.TransactionType;
 import org.springframework.beans.factory.annotation.Autowired;
